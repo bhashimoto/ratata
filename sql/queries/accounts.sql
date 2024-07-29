@@ -6,3 +6,10 @@ FROM accounts;
 INSERT INTO accounts (name, created_at, modified_at)
 VALUES (?, ?, ?)
 RETURNING *;
+
+-- name: GetAccountsFromUserID :many
+SELECT a.*
+FROM accounts a
+JOIN user_accounts ua ON a.id = ua.account_id
+JOIN users u ON ua.user_id = u.id
+WHERE u.id = ?
