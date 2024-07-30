@@ -65,3 +65,39 @@ func (q *Queries) GetAccounts(ctx context.Context) ([]Account, error) {
 	}
 	return items, nil
 }
+
+const getAccountsFromUserID = `-- name: GetAccountsFromUserID :many
+SELECT a.id, a.name, a.created_at, a.modified_at
+FROM accounts a
+JOIN user_accounts ua ON a.id = ua.account_id
+JOIN users u ON ua.user_id = u.id
+WHERE u.id = ?
+`
+
+func (q *Queries) GetAccountsFromUserID(ctx context.Context, id int64) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, getAccountsFromUserID, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Account
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.ModifiedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
