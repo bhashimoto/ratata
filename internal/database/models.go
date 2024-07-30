@@ -11,6 +11,24 @@ type Account struct {
 	ModifiedAt int64  `json:"modified_at"`
 }
 
+type Debt struct {
+	ID            int64   `json:"id"`
+	TransactionID int64   `json:"transaction_id"`
+	UserID        int64   `json:"user_id"`
+	Amount        float64 `json:"amount"`
+	CreatedAt     int64   `json:"created_at"`
+	ModifiedAt    int64   `json:"modified_at"`
+}
+
+type Transaction struct {
+	ID          int64   `json:"id"`
+	CreatedAt   int64   `json:"created_at"`
+	ModifiedAt  int64   `json:"modified_at"`
+	Description string  `json:"description"`
+	Amount      float64 `json:"amount"`
+	PaidBy      int64   `json:"paid_by"`
+}
+
 type User struct {
 	ID         int64  `json:"id"`
 	Name       string `json:"name"`

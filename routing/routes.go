@@ -14,6 +14,13 @@ func SetRoutes(cfg *handlers.ApiConfig) (*http.ServeMux ){
 	mux.HandleFunc("GET /users/{userID}", cfg.HandleGetUser)
 	mux.HandleFunc("POST /users", cfg.HandleCreateUser)
 
+	mux.HandleFunc("POST /accounts", cfg.HandleAccountCreate)
+	mux.HandleFunc("GET /accounts", cfg.HandleAccountsGet)
+
+	mux.HandleFunc("POST /transactions", cfg.HandleTransactionCreate)
+
+	mux.HandleFunc("POST /debts", cfg.HandleDebtCreate)
+
 
 	return mux
 }
