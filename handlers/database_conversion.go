@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
@@ -13,12 +14,13 @@ type User struct {
 	ModifiedAt time.Time `json:"modified_at"`
 }
 
-func DBUserToUser(DBUser database.User) User {
+func (cfg *ApiConfig) DBUserToUser(DBUser database.User) User {
 	user := User {
 		ID: DBUser.ID,
 		Name: DBUser.Name,
 		CreatedAt: time.Unix(DBUser.CreatedAt, 0),
 		ModifiedAt: time.Unix(DBUser.ModifiedAt, 0),
+
 	}
 
 	return user
@@ -29,17 +31,23 @@ type Account struct {
 	Name	   string    `json:"name"`
 	CreatedAt  time.Time `json:"created_at"`
 	ModifiedAt time.Time `json:"modified_at"`
+	Transactions []Transaction `json:"transactions"`
 }
 
-func DBAccountToAccount(DBAccount database.Account) Account {
+func (cfg *ApiConfig) DBAccountToAccount(DBAccount database.Account) (Account, error) {
+	transactions, err := cfg.getTransactionsByAccount(DBAccount.ID)
+	if err != nil {
+		return Account{}, err
+	}
 	account := Account {
 		ID: DBAccount.ID,
 		Name: DBAccount.Name,
 		CreatedAt: time.Unix(DBAccount.CreatedAt, 0),
 		ModifiedAt: time.Unix(DBAccount.ModifiedAt, 0),
+		Transactions: transactions,
 	}
 
-	return account
+	return account, nil
 }
 
 type Transaction struct {
@@ -49,9 +57,15 @@ type Transaction struct {
 	CreatedAt	time.Time	`json:"created_at"`
 	ModifiedAt	time.Time	`json:"modified_at"`
 	Amount		float64		`json:"amount"`
+	Debts		[]Debt		`json:"debts"`
 }
 
-func DBTransactionToTransaction(dbt database.Transaction) Transaction {
+func (cfg *ApiConfig) DBTransactionToTransaction(dbt database.Transaction) (Transaction, error) {
+	debts, err := cfg.getDebtsFromTransaction(dbt.ID)
+	if err != nil {
+		return Transaction{}, err
+	}
+
 	transaction := Transaction {
 		ID: dbt.ID,
 		PaidBy: dbt.PaidBy,
@@ -59,9 +73,10 @@ func DBTransactionToTransaction(dbt database.Transaction) Transaction {
 		CreatedAt: time.Unix(dbt.CreatedAt, 0),
 		ModifiedAt: time.Unix(dbt.ModifiedAt, 0),
 		Amount: dbt.Amount,
+		Debts: debts, 
 	}
 
-	return transaction
+	return transaction, nil
 }
 
 type Debt struct {
@@ -73,7 +88,7 @@ type Debt struct {
 	ModifiedAt time.Time `json:"modified_at"`
 }
 
-func DBDebtToDebt(dbd database.Debt) Debt {
+func (cfg *ApiConfig) DBDebtToDebt(dbd database.Debt) (Debt, error) {
 	debt := Debt {
 		ID: dbd.ID,
 		UserID: dbd.UserID,
@@ -83,5 +98,5 @@ func DBDebtToDebt(dbd database.Debt) Debt {
 		ModifiedAt: time.Unix(dbd.ModifiedAt, 0),
 	}
 
-	return debt
+	return debt, nil
 }

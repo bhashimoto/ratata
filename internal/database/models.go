@@ -27,6 +27,7 @@ type Transaction struct {
 	Description string  `json:"description"`
 	Amount      float64 `json:"amount"`
 	PaidBy      int64   `json:"paid_by"`
+	AccountID   int64   `json:"account_id"`
 }
 
 type User struct {

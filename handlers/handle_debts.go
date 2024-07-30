@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -34,6 +35,30 @@ func (cfg *ApiConfig) HandleDebtCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	debt := DBDebtToDebt(dbd)
+	debt, err := cfg.DBDebtToDebt(dbd)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "could not retrieve debt")
+		return
+	}
+
 	respondWithJSON(w, http.StatusCreated, debt)
 }
+
+func (cfg *ApiConfig) getDebtsByTransaction(transactionID int64) ([]Debt, error) {
+	dbDebts, err := cfg.DB.GetDebtsFromTransaction(context.Background(), transactionID)
+	debts := []Debt{}
+	if err != nil {
+		return debts, err
+	}
+
+	for _, dbd := range dbDebts {
+		debt, err := cfg.DBDebtToDebt(dbd)
+		if err != nil {
+			return []Debt{}, err
+		}
+		debts = append(debts, debt)
+	}
+
+	return debts, nil
+}
+

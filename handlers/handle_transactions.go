@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -35,7 +36,11 @@ func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	transaction := DBTransactionToTransaction(dbTransaction)
+	transaction, err := cfg.DBTransactionToTransaction(dbTransaction)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "unable to retrieve transaction")
+		return
+	}
 	respondWithJSON(w, http.StatusCreated, transaction)
 }
 
@@ -46,9 +51,9 @@ func (cfg *ApiConfig) HandleTransactionGet(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	dbt, err := cfg.DB.GetTransactionByID(r.Context(), int64(transactionID))
+	transaction, err := cfg.getTransaction(int64(transactionID))
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "transaction not found")
+		respondWithError(w, http.StatusInternalServerError, "error loading transaction")
 		return
 	}
 
@@ -58,12 +63,15 @@ func (cfg *ApiConfig) HandleTransactionGet(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-
-	transaction := DBTransactionToTransaction(dbt)
 	debts := []Debt{}
 
 	for _, dbd := range dbDebts {
-		debts = append(debts, DBDebtToDebt(dbd))
+		debt, err := cfg.DBDebtToDebt(dbd)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "unable to retrieve debts")
+			return
+		}
+		debts = append(debts, debt)
 	}
 
 	ret := struct {
@@ -75,4 +83,36 @@ func (cfg *ApiConfig) HandleTransactionGet(w http.ResponseWriter, r *http.Reques
 	}
 	
 	respondWithJSON(w, http.StatusOK, ret)
+}
+
+func (cfg *ApiConfig) getTransaction(transactionID int64) (Transaction, error) {
+	dbt, err := cfg.DB.GetTransactionByID(context.Background(), int64(transactionID))
+	if err != nil {
+		return Transaction{}, err
+	}
+
+	transaction, err := cfg.DBTransactionToTransaction(dbt)
+	if err != nil {
+		return Transaction{}, err
+	}
+
+	return transaction, nil
+}
+
+func (cfg *ApiConfig) getTransactionsByAccount(accountID int64) ([]Transaction, error) {
+	dbts, err := cfg.DB.GetTransactionsByAccountID(context.Background(), accountID)
+	if err != nil {
+		return []Transaction{}, err
+	}
+
+	transactions := []Transaction{}
+	for _, dbt := range dbts {
+		transaction, err := cfg.DBTransactionToTransaction(dbt)
+		if err != nil {
+			return []Transaction{}, err
+		}
+		transactions = append(transactions, transaction)
+	}
+
+	return transactions, nil
 }

@@ -21,7 +21,7 @@ func (cfg *ApiConfig) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := DBUserToUser(dbUser)
+	user := cfg.DBUserToUser(dbUser)
 	respondWithJSON(w, http.StatusOK, user)
 	
 }
@@ -36,7 +36,7 @@ func (cfg *ApiConfig) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 	users := []User{}
 
 	for _, dbUser := range dbUsers {
-		users = append(users, DBUserToUser(dbUser))
+		users = append(users, cfg.DBUserToUser(dbUser))
 	}
 
 	respondWithJSON(w, http.StatusOK, users)
@@ -64,7 +64,7 @@ func (cfg *ApiConfig) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := DBUserToUser(dbUser)
+	user := cfg.DBUserToUser(dbUser)
 
 	respondWithJSON(w, http.StatusCreated, user)
 }

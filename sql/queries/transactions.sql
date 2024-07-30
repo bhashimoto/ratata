@@ -7,3 +7,8 @@ RETURNING *;
 SELECT *
 FROM transactions
 WHERE id = ?;
+
+-- name: GetTransactionsByAccountID :many
+SELECT *
+FROM transactions
+WHERE account_id = ?;

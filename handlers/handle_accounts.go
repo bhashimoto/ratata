@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
@@ -30,20 +32,65 @@ func (cfg *ApiConfig) HandleAccountCreate(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	account := DBAccountToAccount(dbAccount)
+	account, err := cfg.DBAccountToAccount(dbAccount)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "error retrieving account")
+		return
+	}
 	respondWithJSON(w, http.StatusCreated, account)
 }
 
 func (cfg *ApiConfig) HandleAccountsGet(w http.ResponseWriter, r *http.Request) {
-	dbAccounts, err := cfg.DB.GetAccounts(r.Context())
+	accounts, err := cfg.getAccounts()
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "unable to get accounts")
+		respondWithError(w, http.StatusInternalServerError, "could not load accounts")
 		return
+	}
+	respondWithJSON(w, http.StatusOK, accounts)
+}
+
+func (cfg *ApiConfig) HandleAccountGet(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("accountID"))
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	account, err := cfg.getAccount(int64(id))
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "account not found")
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, account)
+}
+
+func (cfg *ApiConfig) getAccounts() ([]Account, error) {
+	dbAccounts, err := cfg.DB.GetAccounts(context.Background())
+	if err != nil {
+		return []Account{}, err
 	}
 
 	accounts := []Account{}
 	for _, dbAccount := range dbAccounts {
-		accounts = append(accounts, DBAccountToAccount(dbAccount))
+		account, err := cfg.DBAccountToAccount(dbAccount)
+		if err != nil {
+			return []Account{}, err
+		}
+		accounts = append(accounts, account)
 	}
-	respondWithJSON(w, http.StatusOK, accounts)
+	return accounts, nil
+}
+
+func (cfg *ApiConfig) getAccount(id int64) (Account, error) {
+	dbAccount, err := cfg.DB.GetAccountByID(context.Background(), id)
+	if err != nil {
+		return Account{}, err
+	}
+
+	account, err := cfg.DBAccountToAccount(dbAccount)
+	if err != nil  {
+		return Account{}, err
+	}
+	return account, nil
 }

@@ -6,7 +6,9 @@ CREATE TABLE transactions(
 	description	TEXT NOT NULL,
 	amount		REAL NOT NULL DEFAULT 0.0,
 	paid_by		INTEGER NOT NULL,
-	FOREIGN KEY(paid_by) REFERENCES users(id)
+	account_id	INTEGER NOT NULL,
+	FOREIGN KEY(paid_by) REFERENCES users(id),
+	FOREIGN KEY(account_id) REFERENCES accounts(id)
 );
 
 -- +goose Down

@@ -33,6 +33,24 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 	return i, err
 }
 
+const getAccountByID = `-- name: GetAccountByID :one
+SELECT id, name, created_at, modified_at
+FROM accounts
+WHERE id = ?
+`
+
+func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccountByID, id)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.ModifiedAt,
+	)
+	return i, err
+}
+
 const getAccounts = `-- name: GetAccounts :many
 SELECT id, name, created_at, modified_at
 FROM accounts
@@ -66,7 +84,7 @@ func (q *Queries) GetAccounts(ctx context.Context) ([]Account, error) {
 	return items, nil
 }
 
-const getAccountsFromUserID = `-- name: GetAccountsFromUserID :many
+const getAccountsByUserID = `-- name: GetAccountsByUserID :many
 SELECT a.id, a.name, a.created_at, a.modified_at
 FROM accounts a
 JOIN user_accounts ua ON a.id = ua.account_id
@@ -74,8 +92,8 @@ JOIN users u ON ua.user_id = u.id
 WHERE u.id = ?
 `
 
-func (q *Queries) GetAccountsFromUserID(ctx context.Context, id int64) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, getAccountsFromUserID, id)
+func (q *Queries) GetAccountsByUserID(ctx context.Context, id int64) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, getAccountsByUserID, id)
 	if err != nil {
 		return nil, err
 	}
