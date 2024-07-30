@@ -42,3 +42,23 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 	)
 	return i, err
 }
+
+const getTransactionByID = `-- name: GetTransactionByID :one
+SELECT id, created_at, modified_at, description, amount, paid_by
+FROM transactions
+WHERE id = ?
+`
+
+func (q *Queries) GetTransactionByID(ctx context.Context, id int64) (Transaction, error) {
+	row := q.db.QueryRowContext(ctx, getTransactionByID, id)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.ModifiedAt,
+		&i.Description,
+		&i.Amount,
+		&i.PaidBy,
+	)
+	return i, err
+}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
@@ -36,4 +37,42 @@ func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Req
 
 	transaction := DBTransactionToTransaction(dbTransaction)
 	respondWithJSON(w, http.StatusCreated, transaction)
+}
+
+func (cfg *ApiConfig) HandleTransactionGet(w http.ResponseWriter, r *http.Request) {
+	transactionID, err  := strconv.Atoi(r.PathValue("transactionID"))
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "invalid transaction ID")
+		return
+	}
+
+	dbt, err := cfg.DB.GetTransactionByID(r.Context(), int64(transactionID))
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "transaction not found")
+		return
+	}
+
+	dbDebts, err := cfg.DB.GetDebtsFromTransaction(r.Context(), int64(transactionID))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "error loading debts")
+		return
+	}
+
+
+	transaction := DBTransactionToTransaction(dbt)
+	debts := []Debt{}
+
+	for _, dbd := range dbDebts {
+		debts = append(debts, DBDebtToDebt(dbd))
+	}
+
+	ret := struct {
+		Transaction Transaction `json:"transaction"`
+		Debts []Debt `json:"debts"`
+	}{
+		Transaction: transaction,
+		Debts: debts,
+	}
+	
+	respondWithJSON(w, http.StatusOK, ret)
 }
