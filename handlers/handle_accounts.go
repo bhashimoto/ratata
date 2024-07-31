@@ -3,12 +3,74 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
 )
+
+type Balance struct {
+	User	User `json:"user"`
+	Paid	float64 `json:"paid"`
+	Owes	float64 `json:"owes"`
+}
+
+func (cfg *ApiConfig) HandleBalanceGet(w http.ResponseWriter, r *http.Request) {
+	accountID, err := strconv.Atoi(r.PathValue("accountID"))
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	transactions, err := cfg.getTransactionsByAccount(int64(accountID))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "unable to retrieve transactions")
+		return
+	}
+	
+	dbUsers, err := cfg.DB.GetUsersByAccount(r.Context(), int64(accountID))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "unable to retrieve users")
+		return
+	}
+
+	balances := make(map[int64]*Balance)
+	for _, dbUser := range dbUsers {
+		user := cfg.DBUserToUser(dbUser)
+		balance := Balance {
+			User: user,
+			Paid: 0.0,
+			Owes: 0.0,
+		}
+		balances[user.ID] = &balance
+	}
+
+	for _, transaction := range transactions {
+		if balances[transaction.PaidBy] == nil{
+			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("payer with id %v not registered in account", transaction.PaidBy))
+			return
+		}
+		balances[transaction.PaidBy].Paid += transaction.Amount
+
+		for _, debt := range transaction.Debts {
+			if balances[debt.UserID] == nil {
+				respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Ower with id %v not registered in account",debt.UserID))
+				return
+			}
+			balances[debt.UserID].Owes += debt.Amount
+		}
+	}
+
+	respondWithJSON(w, http.StatusOK, balances)
+
+
+
+
+
+
+}
 
 func (cfg *ApiConfig) HandleAccountCreate(w http.ResponseWriter, r *http.Request) {
 	params := struct {
