@@ -22,7 +22,33 @@ func (cfg *ApiConfig) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := cfg.DBUserToUser(dbUser)
-	respondWithJSON(w, http.StatusOK, user)
+
+	dbAccs, err := cfg.DB.GetAccountsByUserID(r.Context(), user.ID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "unable to retrieve accounts")
+		return
+	}
+	accounts := []Account{}
+
+	for _, dbAcc := range dbAccs {
+		account, err := cfg.DBAccountToAccount(dbAcc)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "unable to get accounts")
+			return
+		}
+		accounts = append(accounts, account)
+	}
+
+	resp := struct {
+		User User `json:"user"`
+		Accounts []Account `json:"accounts"`
+	}{
+		User: user,
+		Accounts: accounts,
+	}
+
+
+	respondWithJSON(w, http.StatusOK, resp)
 	
 }
 

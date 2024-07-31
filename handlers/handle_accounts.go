@@ -62,7 +62,26 @@ func (cfg *ApiConfig) HandleAccountGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, account)
+	dbUsers, err := cfg.DB.GetUsersByAccount(r.Context(), account.ID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "unable to fetch account users")
+		return
+	}
+	users := []User{}
+	for _, dbUser := range dbUsers {
+		user := cfg.DBUserToUser(dbUser)
+		users = append(users, user)
+	}
+
+	resp := struct {
+		Account Account `json:"account"`
+		Users []User `json:"users"`
+	}{
+		Account: account,
+		Users: users,
+	}
+
+	respondWithJSON(w, http.StatusOK, resp)
 }
 
 func (cfg *ApiConfig) getAccounts() ([]Account, error) {

@@ -1,6 +1,6 @@
 -- name: CreateTransaction :one
-INSERT INTO transactions (created_at, modified_at, description, amount, paid_by)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO transactions (account_id, created_at, modified_at, description, amount, paid_by)
+VALUES (?, ?, ?, ?, ?, ?)
 RETURNING *;
 
 -- name: GetTransactionByID :one

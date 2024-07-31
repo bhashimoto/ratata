@@ -38,6 +38,8 @@ type User struct {
 }
 
 type UserAccount struct {
-	UserID    int64 `json:"user_id"`
-	AccountID int64 `json:"account_id"`
+	UserID     int64 `json:"user_id"`
+	AccountID  int64 `json:"account_id"`
+	CreatedAt  int64 `json:"created_at"`
+	ModifiedAt int64 `json:"modified_at"`
 }

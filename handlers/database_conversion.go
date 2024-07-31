@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
@@ -61,7 +60,7 @@ type Transaction struct {
 }
 
 func (cfg *ApiConfig) DBTransactionToTransaction(dbt database.Transaction) (Transaction, error) {
-	debts, err := cfg.getDebtsFromTransaction(dbt.ID)
+	debts, err := cfg.getDebtsByTransaction(dbt.ID)
 	if err != nil {
 		return Transaction{}, err
 	}
@@ -100,3 +99,24 @@ func (cfg *ApiConfig) DBDebtToDebt(dbd database.Debt) (Debt, error) {
 
 	return debt, nil
 }
+
+type UserAccount struct {
+	UserID int64 `json:"user_id"`
+	AccountID int64 `json:"account_id"`
+	CreatedAt time.Time `json:"created_at"`
+	ModifiedAt time.Time `json:"modified_at"`
+
+}
+
+func (cfg *ApiConfig) DBUserAccountToUserAccount(dbua database.UserAccount) (UserAccount, error) {
+	userAccount := UserAccount {
+		UserID: dbua.UserID,
+		AccountID: dbua.AccountID,
+		CreatedAt: time.Unix(dbua.CreatedAt, 0),
+		ModifiedAt: time.Unix(dbua.ModifiedAt, 0),
+	}
+
+	return userAccount, nil
+
+}
+

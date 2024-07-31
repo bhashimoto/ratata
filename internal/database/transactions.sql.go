@@ -10,12 +10,13 @@ import (
 )
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (created_at, modified_at, description, amount, paid_by)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO transactions (account_id, created_at, modified_at, description, amount, paid_by)
+VALUES (?, ?, ?, ?, ?, ?)
 RETURNING id, created_at, modified_at, description, amount, paid_by, account_id
 `
 
 type CreateTransactionParams struct {
+	AccountID   int64   `json:"account_id"`
 	CreatedAt   int64   `json:"created_at"`
 	ModifiedAt  int64   `json:"modified_at"`
 	Description string  `json:"description"`
@@ -25,6 +26,7 @@ type CreateTransactionParams struct {
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
 	row := q.db.QueryRowContext(ctx, createTransaction,
+		arg.AccountID,
 		arg.CreatedAt,
 		arg.ModifiedAt,
 		arg.Description,

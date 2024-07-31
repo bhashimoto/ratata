@@ -15,6 +15,7 @@ func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Req
 		Description	string  `json:"description"`
 		Amount		float64 `json:"amount"`
 		PaidBy		int64	`json:"paid_by"`
+		AccountID	int64	`json:"account_id"`
 	}{}
 
 	decoder := json.NewDecoder(r.Body)
@@ -28,6 +29,7 @@ func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Req
 		Amount: params.Amount,
 		Description: params.Description,
 		PaidBy: params.PaidBy,
+		AccountID: params.AccountID,
 		CreatedAt: time.Now().Unix(),
 		ModifiedAt: time.Now().Unix(),
 	})
