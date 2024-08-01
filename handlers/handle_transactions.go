@@ -12,10 +12,11 @@ import (
 
 func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Request) {
 	params := struct {
-		Description	string  `json:"description"`
-		Amount		float64 `json:"amount"`
-		PaidBy		int64	`json:"paid_by"`
-		AccountID	int64	`json:"account_id"`
+		Description	string		`json:"description"`
+		Amount		float64		`json:"amount"`
+		PaidBy		int64		`json:"paid_by"`
+		AccountID	int64		`json:"account_id"`
+		Debts		[]DebtParams	`json:"debts,omitempty"`
 	}{}
 
 	decoder := json.NewDecoder(r.Body)
@@ -38,11 +39,20 @@ func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	_, err = cfg.insertDebts(dbTransaction.ID, params.Debts)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "error creating debts")
+		return
+	}
+
 	transaction, err := cfg.DBTransactionToTransaction(dbTransaction)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "unable to retrieve transaction")
 		return
 	}
+
+
+
 	respondWithJSON(w, http.StatusCreated, transaction)
 }
 
@@ -59,32 +69,7 @@ func (cfg *ApiConfig) HandleTransactionGet(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	dbDebts, err := cfg.DB.GetDebtsFromTransaction(r.Context(), int64(transactionID))
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "error loading debts")
-		return
-	}
-
-	debts := []Debt{}
-
-	for _, dbd := range dbDebts {
-		debt, err := cfg.DBDebtToDebt(dbd)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, "unable to retrieve debts")
-			return
-		}
-		debts = append(debts, debt)
-	}
-
-	ret := struct {
-		Transaction Transaction `json:"transaction"`
-		Debts []Debt `json:"debts"`
-	}{
-		Transaction: transaction,
-		Debts: debts,
-	}
-	
-	respondWithJSON(w, http.StatusOK, ret)
+	respondWithJSON(w, http.StatusOK, transaction)
 }
 
 func (cfg *ApiConfig) getTransaction(transactionID int64) (Transaction, error) {

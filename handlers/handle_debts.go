@@ -9,6 +9,11 @@ import (
 	"github.com/bhashimoto/ratata/internal/database"
 )
 
+type DebtParams struct {
+	UserId	int64	`json:"user_id"`
+	Amount	float64	`json:"amount"`
+}
+
 func (cfg *ApiConfig) HandleDebtCreate(w http.ResponseWriter, r *http.Request) {
 	params := struct{
 		UserID int64 `json:"user_id"`
@@ -62,3 +67,25 @@ func (cfg *ApiConfig) getDebtsByTransaction(transactionID int64) ([]Debt, error)
 	return debts, nil
 }
 
+
+func (cfg *ApiConfig) insertDebts(transactionID int64, params []DebtParams) ([]Debt, error) {
+	debts := []Debt{}
+	for _, protoDebt := range params {
+		DBDebt, err := cfg.DB.CreateDebt(context.Background(), database.CreateDebtParams{
+			UserID: protoDebt.UserId,
+			Amount: protoDebt.Amount,
+			CreatedAt: time.Now().Unix(),
+			ModifiedAt: time.Now().Unix(),
+			TransactionID: transactionID,
+		})
+		if err != nil {
+			return []Debt{}, err
+		}
+		debt, err := cfg.DBDebtToDebt(DBDebt)
+		if err != nil {
+			return []Debt{}, err
+		}
+		debts = append(debts, debt)
+	}
+	return debts, nil
+}
