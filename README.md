@@ -4,9 +4,9 @@ Ratata (not to be mistaken with [Rattata](https://www.pokemon.com/us/pokedex/rat
 ## Splitwise already exists, why Ratata?
 I was looking for a simple way to split costs between people, for both short-term purposes (barbecues, group trips) and long-term (household stuff). Splitwise is fine, but I was looking for something that fits my needs better:
 * Unlimited daily transactions (for free)
-* Web-based (no need to install apps)
-* No registration (for those trips with people that don't use such apps)
-* Cost breakdown reports
+* [TBD] Web-based (no need to install apps)
+* [TBD] No registration (for those trips with people that don't use such apps)
+* [TBD] Cost breakdown reports
 
 ## Quick Start
 

@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/bhashimoto/ratata/handlers"
@@ -8,8 +9,9 @@ import (
 
 func SetRoutes(cfg *handlers.ApiConfig) (*http.ServeMux ){
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", cfg.HandleIndex)
 
+
+	// backend API endpoints
 	mux.HandleFunc("GET /api/users", cfg.HandleGetUsers)
 	mux.HandleFunc("GET /api/users/{userID}", cfg.HandleGetUser)
 	mux.HandleFunc("POST /api/users", cfg.HandleCreateUser)
@@ -26,5 +28,16 @@ func SetRoutes(cfg *handlers.ApiConfig) (*http.ServeMux ){
 
 	mux.HandleFunc("POST /api/user-accounts", cfg.HandleUserAccountCreate)
 
+	err := setFrontEndRoutes(cfg, mux)
+	if err != nil {
+		log.Fatal("Could not set frontend routes at SetRoutes")
+	}
 	return mux
+}
+
+func setFrontEndRoutes(cfg *handlers.ApiConfig, mux *http.ServeMux) (error) {
+//	fs := http.FileServer(http.Dir("./static"))
+	mux.HandleFunc("/", cfg.HandleIndex)
+	mux.HandleFunc("/accounts/{accountID}", cfg.FrontHandleAccounts)
+	return nil
 }

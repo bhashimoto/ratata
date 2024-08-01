@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Ratata</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="css/style.css" rel="stylesheet">
+	</head>
+	<body>
+		<h1>{{.Account.Name}}</h1>
+		<h2>Members</h2>
+		<ul>
+			{{range .Account.Users}}
+			<li>{{.Name}}</li>
+			{{end}}
+		</ul>
+		<h2>Transactions</h2>
+		<ul>
+			{{range .Account.Transactions}}
+			<li>
+				{{.Description}} - {{.Amount}}
+				<br>
+				<ul>
+					{{range .Debts}}
+						<li>{{.UserID}} - {{.Amount}}</li>
+					{{end}}
+				</ul>
+			</li>
+			{{end}}
+		</ul>
+	</body>
+</html>

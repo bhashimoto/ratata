@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
@@ -30,7 +31,23 @@ type Account struct {
 	Name	   string    `json:"name"`
 	CreatedAt  time.Time `json:"created_at"`
 	ModifiedAt time.Time `json:"modified_at"`
+	Users	     []User `json:"users"`
 	Transactions []Transaction `json:"transactions"`
+}
+
+func (cfg *ApiConfig) getUsersByAccount(accountID int64) ([]User, error) {
+	dbUsers, err := cfg.DB.GetUsersByAccount(context.Background(), accountID)
+	if err != nil {
+		return []User{}, err
+	}
+	users := []User{}
+
+	for _, dbuser := range dbUsers {
+		user := cfg.DBUserToUser(dbuser)
+		users = append(users, user)
+	}
+	return users, nil
+
 }
 
 func (cfg *ApiConfig) DBAccountToAccount(DBAccount database.Account) (Account, error) {
@@ -38,12 +55,19 @@ func (cfg *ApiConfig) DBAccountToAccount(DBAccount database.Account) (Account, e
 	if err != nil {
 		return Account{}, err
 	}
+
+	users, err := cfg.getUsersByAccount(DBAccount.ID)
+	if err != nil {
+		return Account{}, err
+	}
+
 	account := Account {
 		ID: DBAccount.ID,
 		Name: DBAccount.Name,
 		CreatedAt: time.Unix(DBAccount.CreatedAt, 0),
 		ModifiedAt: time.Unix(DBAccount.ModifiedAt, 0),
 		Transactions: transactions,
+		Users: users,
 	}
 
 	return account, nil

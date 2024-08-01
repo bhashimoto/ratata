@@ -1,7 +1,12 @@
 package handlers
 
-import "github.com/bhashimoto/ratata/internal/database"
+import (
+	"net/http"
+
+	"github.com/bhashimoto/ratata/internal/database"
+)
 
 type ApiConfig struct {
 	DB *database.Queries
+	FS *http.Handler
 }
