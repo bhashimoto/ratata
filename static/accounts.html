@@ -14,15 +14,23 @@
 			<li>{{.Name}}</li>
 			{{end}}
 		</ul>
+		<h2>Summary</h2>
+		{{if .Balances}}
+		<ul>
+			{{range .Balances}}
+			<li>{{.User.Name}} has paid {{.Paid}} and owes {{.Owes}}</li>	
+			{{end}}
+		</ul>
+		{{end}}
 		<h2>Transactions</h2>
 		<ul>
 			{{range .Account.Transactions}}
 			<li>
-				{{.Description}} - {{.Amount}}
+				{{.Description}} - {{.PaidBy.Name}} - {{.Amount}}
 				<br>
 				<ul>
 					{{range .Debts}}
-						<li>{{.UserID}} - {{.Amount}}</li>
+						<li>{{.User.Name}} - {{.Amount}}</li>
 					{{end}}
 				</ul>
 			</li>

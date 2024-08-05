@@ -75,7 +75,7 @@ func (cfg *ApiConfig) DBAccountToAccount(DBAccount database.Account) (Account, e
 
 type Transaction struct {
 	ID		int64		`json:"id"`
-	PaidBy		int64		`json:"paid_by"`
+	PaidBy		User		`json:"paid_by"`
 	Description	string		`json:"description"`
 	CreatedAt	time.Time	`json:"created_at"`
 	ModifiedAt	time.Time	`json:"modified_at"`
@@ -89,9 +89,12 @@ func (cfg *ApiConfig) DBTransactionToTransaction(dbt database.Transaction) (Tran
 		return Transaction{}, err
 	}
 
+	dbUser, err := cfg.DB.GetUserByID(context.Background(), dbt.PaidBy)
+	payer := cfg.DBUserToUser(dbUser)
+
 	transaction := Transaction {
 		ID: dbt.ID,
-		PaidBy: dbt.PaidBy,
+		PaidBy: payer,
 		Description: dbt.Description,
 		CreatedAt: time.Unix(dbt.CreatedAt, 0),
 		ModifiedAt: time.Unix(dbt.ModifiedAt, 0),
@@ -104,7 +107,7 @@ func (cfg *ApiConfig) DBTransactionToTransaction(dbt database.Transaction) (Tran
 
 type Debt struct {
 	ID int64 `json:"id"`
-	UserID int64 `json:"user_id"`
+	User User`json:"user"`
 	TransactionID int64 `json:"transaction_id"`
 	Amount float64 `json:"amount"`
 	CreatedAT time.Time `json:"created_at"`
@@ -112,9 +115,15 @@ type Debt struct {
 }
 
 func (cfg *ApiConfig) DBDebtToDebt(dbd database.Debt) (Debt, error) {
+	dbUser, err := cfg.DB.GetUserByID(context.Background(), dbd.UserID)
+	if err != nil {
+		return Debt{}, err
+	}
+	user := cfg.DBUserToUser(dbUser)
+
 	debt := Debt {
 		ID: dbd.ID,
-		UserID: dbd.UserID,
+		User: user,
 		TransactionID: dbd.TransactionID,
 		Amount: dbd.Amount,
 		CreatedAT: time.Unix(dbd.CreatedAt, 0),

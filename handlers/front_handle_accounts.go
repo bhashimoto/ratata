@@ -19,13 +19,23 @@ func (cfg *ApiConfig) FrontHandleAccounts(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusInternalServerError, "error loading account")
 		return
 	}
+	balances, err := cfg.getBalancesFromAccount(int64(accountID))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	tmplPath := "./static/accounts.html"
 	tmpl, _ := template.ParseFiles(tmplPath)
 
+
+
 	data := struct{
 		Account Account
+		Balances map[User]*Balance
 	}{
 		Account: account,
+		Balances: balances,
 	}
 	err = tmpl.Execute(w, data)
 	if err != nil {

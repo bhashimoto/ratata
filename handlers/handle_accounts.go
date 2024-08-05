@@ -3,18 +3,60 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"math"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
 )
 
+
 type Balance struct {
 	User	User `json:"user"`
 	Paid	float64 `json:"paid"`
 	Owes	float64 `json:"owes"`
+}
+
+func (cfg *ApiConfig) getBalancesFromAccount(accountID int64) (map[User]*Balance, error)  {
+	transactions, err := cfg.getTransactionsByAccount(int64(accountID))
+	if err != nil {
+		return make(map[User]*Balance), err
+	}
+	
+	dbUsers, err := cfg.DB.GetUsersByAccount(context.Background(), int64(accountID))
+	if err != nil {
+		return make(map[User]*Balance), err
+	}
+
+	balances := make(map[User]*Balance)
+	for _, dbUser := range dbUsers {
+		user := cfg.DBUserToUser(dbUser)
+		balance := Balance {
+			User: user,
+			Paid: 0.0,
+			Owes: 0.0,
+		}
+		balances[user] = &balance
+	}
+
+	for _, transaction := range transactions {
+		if balances[transaction.PaidBy] == nil{
+			return make(map[User]*Balance), err
+		}
+		balances[transaction.PaidBy].Paid += transaction.Amount
+
+		for _, debt := range transaction.Debts {
+			if balances[debt.User] == nil {
+				return make(map[User]*Balance), err
+			}
+			balances[debt.User].Owes += debt.Amount
+		}
+	}
+
+	return balances, nil
+	
 }
 
 func (cfg *ApiConfig) HandleBalanceGet(w http.ResponseWriter, r *http.Request) {
@@ -23,53 +65,98 @@ func (cfg *ApiConfig) HandleBalanceGet(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-
-	transactions, err := cfg.getTransactionsByAccount(int64(accountID))
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "unable to retrieve transactions")
-		return
-	}
 	
-	dbUsers, err := cfg.DB.GetUsersByAccount(r.Context(), int64(accountID))
+	balances, err := cfg.getBalancesFromAccount(int64(accountID))
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "unable to retrieve users")
-		return
+		respondWithError(w, http.StatusInternalServerError, "unable to get balances: " + err.Error())
 	}
 
-	balances := make(map[int64]*Balance)
-	for _, dbUser := range dbUsers {
-		user := cfg.DBUserToUser(dbUser)
-		balance := Balance {
-			User: user,
-			Paid: 0.0,
-			Owes: 0.0,
-		}
-		balances[user.ID] = &balance
+	payments, err := cfg.calculatePayments(balances)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	for _, transaction := range transactions {
-		if balances[transaction.PaidBy] == nil{
-			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("payer with id %v not registered in account", transaction.PaidBy))
-			return
-		}
-		balances[transaction.PaidBy].Paid += transaction.Amount
-
-		for _, debt := range transaction.Debts {
-			if balances[debt.UserID] == nil {
-				respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Ower with id %v not registered in account",debt.UserID))
-				return
-			}
-			balances[debt.UserID].Owes += debt.Amount
-		}
+	ret_balance := []Balance{}
+	for _, v := range balances {
+		ret_balance = append(ret_balance, *v)
 	}
 
-	respondWithJSON(w, http.StatusOK, balances)
+	ret := struct {
+		Balances []Balance `json:"balances"`
+		Payments []Payment `json:"payments"`
+	}{
+		Balances: ret_balance,
+		Payments: payments,
+	}
 
+	respondWithJSON(w, http.StatusOK, ret)
+}
 
+type Payment struct {
+	From	User	`json:"from"`
+	To	User	`json:"to"`
+	Amount	float64 `json:"amount"`
+}
 
+func (cfg *ApiConfig) calculatePayments(balances map[User]*Balance) ([]Payment, error) {
+	type tally struct {
+		user User
+		tally float64
+	}
 
+	tallies := []tally{}
+	for _, balance := range balances {
+		tallies = append(tallies, tally{
+			user: balance.User,
+			tally: balance.Paid - balance.Owes,
+		})
+	}
 
+	sort.Slice(tallies, func(i, j int) bool {return tallies[i].tally > tallies[j].tally})
 
+	payments := []Payment{}
+	from := len(tallies) - 1
+	to := 0
+	for {
+		if tallies[to].tally == 0.0 {
+			break
+		}
+		if from == to {
+			break
+		}
+		if tallies[to].tally > tallies[from].tally {
+			payments = append(payments, Payment{
+				From: tallies[from].user,
+				To: tallies[to].user,
+				Amount: math.Abs(tallies[from].tally),
+			})
+			tallies[to].tally -= tallies[from].tally
+			tallies[from].tally = 0
+			from--
+		} else if tallies[to].tally == tallies[from].tally {
+			payments = append(payments, Payment{
+				From: tallies[from].user,
+				To: tallies[to].user,
+				Amount: math.Abs(tallies[from].tally),
+			})
+			tallies[from].tally = 0
+			tallies[to].tally = 0
+			to++
+			from--
+			
+		} else {
+			payments = append(payments, Payment{
+				From: tallies[from].user,
+				To: tallies[to].user,
+				Amount: tallies[to].tally,
+			})
+			tallies[from].tally -= tallies[to].tally
+			tallies[to].tally = 0
+			to++
+
+		}
+	}
+	return payments, nil
 }
 
 func (cfg *ApiConfig) HandleAccountCreate(w http.ResponseWriter, r *http.Request) {
