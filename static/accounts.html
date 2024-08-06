@@ -6,27 +6,7 @@
 	<li>{{.Name}}</li>
 	{{end}}
 </ul>
-<h2>Summary</h2>
-{{if .Payments}}
-<ul>
-	{{range .Payments}}
-	<li>{{.From.Name}} owes R${{printf "%.2f" .Amount}} to {{.To.Name}}</li>
-	{{end}}
-</ul>
-{{end}}
-<h2>Transactions</h2>
-{{template "transactionForm"}}
-<ul>
-	{{range .Account.Transactions}}
-	<li>
-		{{.Description}} - {{.PaidBy.Name}} - {{.Amount}}
-		<br>
-		<ul>
-			{{range .Debts}}
-				<li>{{.User.Name}} - {{.Amount}}</li>
-			{{end}}
-		</ul>
-	</li>
-	{{end}}
-</ul>
+{{ template "payments" . }}
+{{ template "transactions" . }}
+	
 {{end}}

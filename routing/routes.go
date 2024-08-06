@@ -39,5 +39,9 @@ func setFrontEndRoutes(cfg *handlers.ApiConfig, mux *http.ServeMux) (error) {
 //	fs := http.FileServer(http.Dir("./static"))
 	mux.HandleFunc("/", cfg.HandleIndex)
 	mux.HandleFunc("/accounts/{accountID}", cfg.FrontHandleAccounts)
+	mux.HandleFunc("POST /accounts/{accountID}/create", cfg.FrontHandleTransactionCreate)
+	mux.HandleFunc("GET /accounts/{accountID}/create", cfg.FrontHandleTransactionFormGet)
+	mux.HandleFunc("GET /accounts/{accountID}/transactions", cfg.FrontHandleTransactionsGet)
+	mux.HandleFunc("GET /accounts/{accountID}/payments", cfg.FrontHandlePaymentsGet)
 	return nil
 }

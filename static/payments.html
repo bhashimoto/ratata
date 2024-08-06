@@ -1,0 +1,12 @@
+{{define "payments"}}
+<div hx-get="/accounts/{{.Account.ID}}/payments" hx-trigger="newTransaction from:body">
+	<h2>Summary</h2>
+	{{if .Payments}}
+	<ul>
+		{{range .Payments}}
+		<li>{{.From.Name}} owes R${{printf "%.2f" .Amount}} to {{.To.Name}}</li>
+		{{end}}
+	</ul>
+	{{end}}
+</div>
+{{end}}

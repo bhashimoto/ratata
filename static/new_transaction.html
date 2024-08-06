@@ -1,9 +1,21 @@
 {{define "transactionForm"}}
-<div>
-	<form>
-		<label for="amount">Amount</label>
-		<input type="number" name="amount" value="1.0" step="0.01">
-		<button type="submit">Submit</button>
-	</form>
-</div>
+<form>
+ 	<label for="amount">Amount</label>
+	<input type="number" name="amount" id="amount" value="1.0" step="0.01">
+	<label for="description">description</label>
+	<input type="text" id="description" name="description" >
+	<label for="payer">Payer</label>
+	<select id="payer" name="payer">
+		{{ range .Account.Users }}
+		<option value="{{.ID}}">{{ .Name }}</option>
+		{{end}}
+	</select>
+	{{ range .Account.Users }}
+	<div>
+		<input type="checkbox" name="checkbox-{{.ID}}"/>
+		<label for="checkbox-{{.ID}}">{{.Name}}</label>
+	</div>
+	{{ end }}
+	<button hx-post="/accounts/{{ .Account.ID }}/create" hx-swap="none" type="submit">Submit</button>
+</form>
 {{end}}

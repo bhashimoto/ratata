@@ -1,0 +1,19 @@
+{{ define "transactions"}}
+<div hx-get="/accounts/{{ .Account.ID }}/transactions"  hx-trigger="newTransaction from:body">
+	<h2>Transactions</h2>
+	{{template "transactionForm" . }}
+	<ul>
+		{{range .Account.Transactions}}
+		<li>
+			{{.Description}} - {{.PaidBy.Name}} - {{.Amount}}
+			<br>
+			<ul>
+				{{range .Debts}}
+					<li>{{.User.Name}} - {{.Amount}}</li>
+				{{end}}
+			</ul>
+		</li>
+		{{end}}
+	</ul>
+</div>
+{{ end }}
