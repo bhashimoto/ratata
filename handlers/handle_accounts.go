@@ -124,6 +124,10 @@ func (cfg *ApiConfig) calculatePayments(balances map[User]*Balance) ([]Payment, 
 		if from == to {
 			break
 		}
+		if tallies[from].tally == 0.0 {
+			break
+		}
+
 		if tallies[to].tally > tallies[from].tally {
 			payments = append(payments, Payment{
 				From: tallies[from].user,

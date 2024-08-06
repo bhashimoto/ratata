@@ -1,40 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<title>Ratata</title>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href="css/style.css" rel="stylesheet">
-	</head>
-	<body>
-		<h1>{{.Account.Name}}</h1>
-		<h2>Members</h2>
+{{define "content"}}
+<h1>{{.Account.Name}}</h1>
+<h2>Members</h2>
+<ul>
+	{{range .Account.Users}}
+	<li>{{.Name}}</li>
+	{{end}}
+</ul>
+<h2>Summary</h2>
+{{if .Payments}}
+<ul>
+	{{range .Payments}}
+	<li>{{.From.Name}} owes R${{printf "%.2f" .Amount}} to {{.To.Name}}</li>
+	{{end}}
+</ul>
+{{end}}
+<h2>Transactions</h2>
+{{template "transactionForm"}}
+<ul>
+	{{range .Account.Transactions}}
+	<li>
+		{{.Description}} - {{.PaidBy.Name}} - {{.Amount}}
+		<br>
 		<ul>
-			{{range .Account.Users}}
-			<li>{{.Name}}</li>
+			{{range .Debts}}
+				<li>{{.User.Name}} - {{.Amount}}</li>
 			{{end}}
 		</ul>
-		<h2>Summary</h2>
-		{{if .Balances}}
-		<ul>
-			{{range .Balances}}
-			<li>{{.User.Name}} has paid {{.Paid}} and owes {{.Owes}}</li>	
-			{{end}}
-		</ul>
-		{{end}}
-		<h2>Transactions</h2>
-		<ul>
-			{{range .Account.Transactions}}
-			<li>
-				{{.Description}} - {{.PaidBy.Name}} - {{.Amount}}
-				<br>
-				<ul>
-					{{range .Debts}}
-						<li>{{.User.Name}} - {{.Amount}}</li>
-					{{end}}
-				</ul>
-			</li>
-			{{end}}
-		</ul>
-	</body>
-</html>
+	</li>
+	{{end}}
+</ul>
+{{end}}

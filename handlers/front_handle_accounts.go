@@ -24,20 +24,29 @@ func (cfg *ApiConfig) FrontHandleAccounts(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	payments, err := cfg.calculatePayments(balances)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	tmplPath := "./static/accounts.html"
-	tmpl, _ := template.ParseFiles(tmplPath)
+	//tmplPath := "./static/accounts.html"
+
+	tmpl := template.Must(template.ParseGlob("./static/*.html"))
+	//tmpl, _ := template.ParseFiles(tmplPath)
 
 
 
 	data := struct{
 		Account Account
 		Balances map[User]*Balance
+		Payments []Payment
 	}{
 		Account: account,
 		Balances: balances,
+		Payments: payments,
 	}
-	err = tmpl.Execute(w, data)
+	err = tmpl.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		log.Println(err.Error())
 	}
