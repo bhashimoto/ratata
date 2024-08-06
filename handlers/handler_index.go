@@ -13,20 +13,19 @@ func (cfg *ApiConfig) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles(
-		"./static/base.html", 
-		"./static/index.html",
-	)
+	tmpl, err := template.ParseGlob("./static/*.html")
 	if err != nil {
 		log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 	data := struct {
+		Title string
 		Accounts []Account
 	}{
+		Title: "Welcome to Ratata",
 		Accounts: accounts,
 	}
-	err = tmpl.ExecuteTemplate(w, "base", data)
+	err = tmpl.ExecuteTemplate(w, "index", data)
 	if err != nil {
 		log.Println(err.Error())
 		respondWithError(w, http.StatusInternalServerError, err.Error())

@@ -188,6 +188,7 @@ func (cfg *ApiConfig) FrontHandleAccounts(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	/*
 	tmpl, err := template.ParseFiles(
 		"./static/base.html",
 		"./static/accounts.html",
@@ -195,6 +196,9 @@ func (cfg *ApiConfig) FrontHandleAccounts(w http.ResponseWriter, r *http.Request
 		"./static/payments.html",
 		"./static/transactions.html",
 	)
+	*/
+
+	tmpl, err := template.ParseGlob("./static/*.html")
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -202,7 +206,7 @@ func (cfg *ApiConfig) FrontHandleAccounts(w http.ResponseWriter, r *http.Request
 	}
 
 
-	err = tmpl.ExecuteTemplate(w, "base", accountData)
+	err = tmpl.ExecuteTemplate(w, "accounts", accountData)
 	if err != nil {
 		log.Println(err.Error())
 		respondWithError(w, http.StatusInternalServerError, err.Error())

@@ -1,8 +1,10 @@
-{{define "content"}}
-		<h1>Welcome to Ratata!</h1>
-		<ul>
-			{{range .Accounts}}
-			<li><a href="/accounts/{{.ID}}">{{.Name}}</a></li>
-			{{end}}
-		</ul>
-{{end}}
+{{ define "index" }}
+	{{ template "header" . }}
+	<h1>Welcome to Ratata!</h1>
+	<ul>
+		{{range .Accounts}}
+		<li><a href="/accounts/{{.ID}}">{{.Name}}</a></li>
+		{{end}}
+	</ul>
+	{{ template "footer" . }}
+{{ end }}

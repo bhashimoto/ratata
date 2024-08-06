@@ -1,12 +1,14 @@
-{{define "content"}}
-<h1>{{.Account.Name}}</h1>
-<h2>Members</h2>
-<ul>
-	{{range .Account.Users}}
-	<li>{{.Name}}</li>
-	{{end}}
-</ul>
-{{ template "payments" . }}
-{{ template "transactions" . }}
-	
-{{end}}
+{{ define "accounts" }}
+	{{ template "header" . }}
+	<h1>{{.Account.Name}}</h1>
+	<h2>Members</h2>
+	<ul>
+		{{range .Account.Users}}
+		<li>{{.Name}}</li>
+		{{end}}
+	</ul>
+	{{ template "payments" . }}
+	{{ template "transactions" . }}
+		
+	{{ template "footer" . }}
+{{ end }}

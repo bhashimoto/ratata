@@ -10,6 +10,8 @@ import (
 func SetRoutes(cfg *handlers.ApiConfig) (*http.ServeMux ){
 	mux := http.NewServeMux()
 
+	fs := http.FileServer(http.Dir("./static"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// backend API endpoints
 	mux.HandleFunc("GET /api/users", cfg.HandleGetUsers)
