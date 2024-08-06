@@ -13,7 +13,14 @@ func (cfg *ApiConfig) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl := template.Must(template.ParseGlob("./static/*.html"))
+	tmpl, err := template.ParseFiles(
+		"./static/base.html", 
+		"./static/index.html",
+	)
+	if err != nil {
+		log.Println(err)
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
 	data := struct {
 		Accounts []Account
 	}{
@@ -22,6 +29,7 @@ func (cfg *ApiConfig) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	err = tmpl.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		log.Println(err.Error())
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 	
 }

@@ -30,11 +30,17 @@ func (cfg *ApiConfig) FrontHandleAccounts(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	//tmplPath := "./static/accounts.html"
 
-	tmpl := template.Must(template.ParseGlob("./static/*.html"))
-	//tmpl, _ := template.ParseFiles(tmplPath)
+	tmpl, err := template.ParseFiles(
+		"./static/base.html",
+		"./static/accounts.html",
+		"./static/new_transaction.html",
+	)
 
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
 
 	data := struct{
@@ -49,6 +55,7 @@ func (cfg *ApiConfig) FrontHandleAccounts(w http.ResponseWriter, r *http.Request
 	err = tmpl.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		log.Println(err.Error())
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
 }
