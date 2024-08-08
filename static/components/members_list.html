@@ -1,0 +1,7 @@
+{{ block "members_list" . }}
+<ul>
+	{{range .Account.Users}}
+	<li>{{.Name}}</li>
+	{{end}}
+</ul>
+{{ end }}

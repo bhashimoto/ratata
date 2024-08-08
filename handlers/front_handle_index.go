@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"html/template"
+	//"html/template"
 	"log"
 	"net/http"
 )
@@ -13,7 +13,8 @@ func (cfg *ApiConfig) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseGlob("./static/*.html")
+	//tmpl, err := template.ParseGlob("./static/*.html")
+	tmpl, err := cfg.LoadTemplates("./static/")
 	if err != nil {
 		log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, err.Error())

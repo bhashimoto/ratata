@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +21,10 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	apiCfg := handlers.ApiConfig{}
+	apiCfg := handlers.ApiConfig{
+		Templates: make(map[string]*template.Template),
+		AccountCache: make(map[string]*handlers.AccountData),
+	}
 
 	// https://github.com/libsql/libsql-client-go/#open-a-connection-to-sqld
 	// libsql://[your-database].turso.io?authToken=[your-auth-token]

@@ -1,10 +1,9 @@
 {{ define "index" }}
 	{{ template "header" . }}
 	<h1>Welcome to Ratata!</h1>
-	<ul>
-		{{range .Accounts}}
-		<li><a href="/accounts/{{.ID}}">{{.Name}}</a></li>
-		{{end}}
-	</ul>
+	<h2>Create a new account</h2>
+	{{ template "account_create_form" . }}
+	<h2>Existing accounts</h2>
+	{{ template "accounts_list" . }}
 	{{ template "footer" . }}
 {{ end }}

@@ -1,0 +1,14 @@
+{{ define "account_create_form" }}
+<div>
+	<form>
+		<label for="account_create_name">Account name:</label>
+		<input type="text" name="account_create_name" id="account_create_name" value="">
+		<button type="submit" 
+			hx-post="/accounts" 
+			hx-swap="none">
+			Create
+		</button>
+	</form>
+</div>
+
+{{ end }}

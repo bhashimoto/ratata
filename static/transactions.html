@@ -2,18 +2,33 @@
 <div hx-get="/accounts/{{ .Account.ID }}/transactions"  hx-trigger="newTransaction from:body">
 	<h2>Transactions</h2>
 	{{template "transactionForm" . }}
-	<ul>
-		{{range .Account.Transactions}}
-		<li>
-			{{.Description}} - {{.PaidBy.Name}} - {{.Amount}}
-			<br>
-			<ul>
-				{{range .Debts}}
-					<li>{{.User.Name}} - {{.Amount}}</li>
-				{{end}}
-			</ul>
-		</li>
-		{{end}}
-	</ul>
+	<table>
+		<tr>
+			<th>Date</th>
+			<th>Payer</th>
+			<th>Description</th>
+			<th>Amount</th>
+			<th>Split</th>
+			<th>Action</th>
+		</tr>
+		{{ range .Account.Transactions }}
+		<tr>
+			<td>{{ .CreatedAt }}</td>
+			<td>{{ .PaidBy.Name}}</td>
+			<td>{{ .Description }}</td>
+			<td>{{ .Amount }}</td>
+			<td>
+				<ul>
+					{{ range .Debts }}
+					<li>
+						{{ .User.Name }} - {{ .Amount }}
+					</li>
+					{{ end }}
+					
+				</ul>
+			</td>
+		</tr>
+		{{ end }}
+	</table>
 </div>
 {{ end }}

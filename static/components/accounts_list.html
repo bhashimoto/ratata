@@ -1,0 +1,7 @@
+{{ block "accounts_list" . }}
+<ul hx-get="/accounts" hx-swap="outerHTML" hx-trigger="newAccount from:body">
+	{{range .Accounts}}
+	<li><a href="/accounts/{{.ID}}">{{.Name}}</a></li>
+	{{end}}
+</ul>
+{{ end }}

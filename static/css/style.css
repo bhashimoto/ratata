@@ -1,3 +1,49 @@
 body {
-	background-color: #DDD;
+	-webkit-appearance: none;
+	appearance: none;
+	--main-bg-color: #555;
+	--heading-color: #FAFAFA;
+	--primary-text: #FAFAFA;
+	background-color: var(--main-bg-color);
+	color: var(--primary-text);
 }
+
+h1, h2, h3, h4, h5, h6 {
+	color: var(--heading-color);
+}
+
+a {
+	color: var(--heading-color);
+	font-weight: 600;
+}
+
+a:hover {
+	color: #AAA;
+}
+
+a:visited {
+	color: purple;
+}
+
+table, th, td {
+	border: 1px solid;
+	border-collapse: collapse;
+}
+
+input {
+	background-color: #333;
+	color: var(--primary-text);
+	border-radius: 5px;
+	min-height: 1.5em;
+	border-style: solid;
+}
+
+select, option {
+	background-color: #333;
+	color: var(--primary-text);
+	border-radius: 5px;
+	height: 2em;
+	border-style: solid;
+}
+
+

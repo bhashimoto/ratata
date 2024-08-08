@@ -99,6 +99,10 @@ type Payment struct {
 }
 
 func (cfg *ApiConfig) calculatePayments(balances map[User]*Balance) ([]Payment, error) {
+	if len(balances) == 0 {
+		return []Payment{}, nil
+	}
+
 	type tally struct {
 		user User
 		tally float64
@@ -174,6 +178,7 @@ func (cfg *ApiConfig) HandleAccountCreate(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusBadRequest, "invalid request format")
 		return
 	}
+
 
 	dbAccount, err := cfg.DB.CreateAccount(r.Context(), database.CreateAccountParams{
 		Name: params.Name,

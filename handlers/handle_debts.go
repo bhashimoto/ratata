@@ -46,6 +46,7 @@ func (cfg *ApiConfig) HandleDebtCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	respondWithJSON(w, http.StatusCreated, debt)
 }
 

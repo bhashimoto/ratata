@@ -7,8 +7,12 @@
 		<li>{{.Name}}</li>
 		{{end}}
 	</ul>
-	{{ template "payments" . }}
-	{{ template "transactions" . }}
+	{{ if len .Payments }}
+		{{ template "payments" . }}
+	{{ end }}
+	{{ if len .Account.Transactions}}
+		{{ template "transactions" . }}
+	{{ end }}
 		
 	{{ template "footer" . }}
 {{ end }}
