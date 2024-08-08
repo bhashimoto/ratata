@@ -1,5 +1,5 @@
 # Ratata
-![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white) ![HTML](https://img.shields.io/badge/HTML-%23E34F26.svg?logo=html5&logoColor=white) ![HTMX](https://img.shields.io/badge/HTMX-36C?logo=htmx&logoColor=fff) ![SQLite](https://img.shields.io/badge/SQLite-%2307405e.svg?logo=sqlite&logoColor=white)]
+![Go](https://img.shields.io/badge/Go-%2300ADD8.svg?&logo=go&logoColor=white) ![HTML](https://img.shields.io/badge/HTML-%23E34F26.svg?logo=html5&logoColor=white) ![HTMX](https://img.shields.io/badge/HTMX-36C?logo=htmx&logoColor=fff) ![SQLite](https://img.shields.io/badge/SQLite-%2307405e.svg?logo=sqlite&logoColor=white)
 Ratata (not to be mistaken with [Rattata](https://www.pokemon.com/us/pokedex/rattata)) is a Brazilian slang for spliting the bill. This is a Splitwise-like application that aims to simplify cost splitting between multiple people.
 
 ## Splitwise already exists, why Ratata?
