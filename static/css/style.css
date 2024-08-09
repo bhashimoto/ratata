@@ -46,4 +46,15 @@ select, option {
 	border-style: solid;
 }
 
+button {
+	background-color: #333;
+	color: var(--primary-text);
+	font-size: 1.3em;
+	border-width: 2px;
+	border-color: #DDD;
+	border-style: solid;
+	border-radius: 5px;
+	padding: 5px;
+	margin-bottom: 5px;;
 
+}
