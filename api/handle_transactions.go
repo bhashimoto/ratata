@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"context"
@@ -8,15 +8,16 @@ import (
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
+	"github.com/bhashimoto/ratata/types"
 )
 
 func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Request) {
 	params := struct {
-		Description	string		`json:"description"`
-		Amount		float64		`json:"amount"`
-		PaidBy		int64		`json:"paid_by"`
-		AccountID	int64		`json:"account_id"`
-		Debts		[]DebtParams	`json:"debts,omitempty"`
+		Description string       `json:"description"`
+		Amount      float64      `json:"amount"`
+		PaidBy      int64        `json:"paid_by"`
+		AccountID   int64        `json:"account_id"`
+		Debts       []DebtParams `json:"debts,omitempty"`
 	}{}
 
 	decoder := json.NewDecoder(r.Body)
@@ -27,12 +28,12 @@ func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Req
 	}
 
 	dbTransaction, err := cfg.DB.CreateTransaction(r.Context(), database.CreateTransactionParams{
-		Amount: params.Amount,
+		Amount:      params.Amount,
 		Description: params.Description,
-		PaidBy: params.PaidBy,
-		AccountID: params.AccountID,
-		CreatedAt: time.Now().Unix(),
-		ModifiedAt: time.Now().Unix(),
+		PaidBy:      params.PaidBy,
+		AccountID:   params.AccountID,
+		CreatedAt:   time.Now().Unix(),
+		ModifiedAt:  time.Now().Unix(),
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error creating transaction")
@@ -51,13 +52,11 @@ func (cfg *ApiConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-
-
 	respondWithJSON(w, http.StatusCreated, transaction)
 }
 
 func (cfg *ApiConfig) HandleTransactionGet(w http.ResponseWriter, r *http.Request) {
-	transactionID, err  := strconv.Atoi(r.PathValue("transactionID"))
+	transactionID, err := strconv.Atoi(r.PathValue("transactionID"))
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "invalid transaction ID")
 		return
@@ -72,31 +71,31 @@ func (cfg *ApiConfig) HandleTransactionGet(w http.ResponseWriter, r *http.Reques
 	respondWithJSON(w, http.StatusOK, transaction)
 }
 
-func (cfg *ApiConfig) getTransaction(transactionID int64) (Transaction, error) {
+func (cfg *ApiConfig) getTransaction(transactionID int64) (types.Transaction, error) {
 	dbt, err := cfg.DB.GetTransactionByID(context.Background(), int64(transactionID))
 	if err != nil {
-		return Transaction{}, err
+		return types.Transaction{}, err
 	}
 
 	transaction, err := cfg.DBTransactionToTransaction(dbt)
 	if err != nil {
-		return Transaction{}, err
+		return types.Transaction{}, err
 	}
 
 	return transaction, nil
 }
 
-func (cfg *ApiConfig) getTransactionsByAccount(accountID int64) ([]Transaction, error) {
+func (cfg *ApiConfig) getTransactionsByAccount(accountID int64) ([]types.Transaction, error) {
 	dbts, err := cfg.DB.GetTransactionsByAccountID(context.Background(), accountID)
 	if err != nil {
-		return []Transaction{}, err
+		return []types.Transaction{}, err
 	}
 
-	transactions := []Transaction{}
+	transactions := []types.Transaction{}
 	for _, dbt := range dbts {
 		transaction, err := cfg.DBTransactionToTransaction(dbt)
 		if err != nil {
-			return []Transaction{}, err
+			return []types.Transaction{}, err
 		}
 		transactions = append(transactions, transaction)
 	}

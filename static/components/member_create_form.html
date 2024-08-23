@@ -1,0 +1,9 @@
+{{ block "member_create_form" . }}
+<div>
+	<form>
+		<label for="member_name">Name</label>
+		<input type="text" name="member_name">
+		<button type="submit" hx-post="/accounts/{{ .Account.ID }}/members">Create</button>
+	</form>
+</div>
+{{ end }}

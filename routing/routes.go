@@ -1,15 +1,13 @@
 package routing
 
 import (
-	"log"
 	"net/http"
 
-	"github.com/bhashimoto/ratata/handlers"
+	"github.com/bhashimoto/ratata/api"
+	"github.com/bhashimoto/ratata/front"
 )
 
-func SetRoutes(cfg *handlers.ApiConfig) (*http.ServeMux ){
-	mux := http.NewServeMux()
-
+func SetApiRoutes(cfg *api.ApiConfig, mux *http.ServeMux) error {
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
@@ -30,22 +28,18 @@ func SetRoutes(cfg *handlers.ApiConfig) (*http.ServeMux ){
 
 	mux.HandleFunc("POST /api/user-accounts", cfg.HandleUserAccountCreate)
 
-	err := setFrontEndRoutes(cfg, mux)
-	if err != nil {
-		log.Fatal("Could not set frontend routes at SetRoutes")
-	}
-	return mux
+	return nil
 }
 
-func setFrontEndRoutes(cfg *handlers.ApiConfig, mux *http.ServeMux) (error) {
-//	fs := http.FileServer(http.Dir("./static"))
+func SetFrontEndRoutes(cfg *front.WebAppConfig, mux *http.ServeMux) error {
+	//	fs := http.FileServer(http.Dir("./static"))
 	mux.HandleFunc("/", cfg.HandleIndex)
-	mux.HandleFunc("GET /accounts", cfg.FrontHandleAccountsList)
-	mux.HandleFunc("POST /accounts", cfg.FrontHandleAccountCreate)
-	mux.HandleFunc("/accounts/{accountID}", cfg.FrontHandleAccounts)
-	mux.HandleFunc("POST /accounts/{accountID}/create", cfg.FrontHandleTransactionCreate)
-	mux.HandleFunc("GET /accounts/{accountID}/create", cfg.FrontHandleTransactionFormGet)
-	mux.HandleFunc("GET /accounts/{accountID}/transactions", cfg.FrontHandleTransactionsGet)
-	mux.HandleFunc("GET /accounts/{accountID}/payments", cfg.FrontHandlePaymentsGet)
+	mux.HandleFunc("GET /accounts", cfg.HandleAccountsList)
+	mux.HandleFunc("POST /accounts", cfg.HandleAccountCreate)
+	mux.HandleFunc("/accounts/{accountID}", cfg.HandleAccounts)
+	mux.HandleFunc("POST /accounts/{accountID}/create", cfg.HandleTransactionCreate)
+	mux.HandleFunc("GET /accounts/{accountID}/create", cfg.HandleTransactionFormGet)
+	mux.HandleFunc("GET /accounts/{accountID}/transactions", cfg.HandleTransactionsGet)
+	//mux.HandleFunc("GET /accounts/{accountID}/payments", cfg.HandlePaymentsGet)
 	return nil
 }

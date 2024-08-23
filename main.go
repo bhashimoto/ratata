@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/bhashimoto/ratata/handlers"
+	"github.com/bhashimoto/ratata/api"
+	"github.com/bhashimoto/ratata/front"
 	"github.com/bhashimoto/ratata/internal/database"
 	"github.com/bhashimoto/ratata/routing"
 	"github.com/joho/godotenv"
@@ -21,10 +21,18 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	apiCfg := handlers.ApiConfig{
-		Templates: make(map[string]*template.Template),
-		AccountCache: make(map[string]*handlers.AccountData),
+	log.Println("creating config structs")
+	apiCfg := api.ApiConfig{
+		AccountCache: make(map[string]*api.AccountData),
 	}
+	webCfg := front.WebAppConfig{
+		BaseURL:   "http://localhost:8080/api/",
+	}
+	baseUrl := os.Getenv("BACKEND_BASE_URL")
+	staticRoot := "./static/"
+	
+	log.Println("initializing webCfg")
+	webCfg.Init(staticRoot, baseUrl)
 
 	// https://github.com/libsql/libsql-client-go/#open-a-connection-to-sqld
 	// libsql://[your-database].turso.io?authToken=[your-auth-token]
@@ -42,18 +50,27 @@ func main() {
 		log.Println("Connected to database!")
 	}
 
-	mux := routing.SetRoutes(&apiCfg)
+	mux := http.NewServeMux()
+	log.Println("Setting API routes")
+	err := routing.SetApiRoutes(&apiCfg, mux)
+	if err != nil {
+		log.Fatal("Could not set API routes:", err)
+	}
+
+	log.Println("Setting front-end routes")
+	err = routing.SetFrontEndRoutes(&webCfg, mux)
+	if err != nil {
+		log.Fatal("Could not set front-end routes:", err)
+	}
 
 	server := http.Server{
-		Addr: ":" + port,
+		Addr:    ":" + port,
 		Handler: mux,
 	}
 
-	
 	log.Println("Listening on port", port)
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-

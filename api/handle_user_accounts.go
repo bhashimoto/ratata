@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"encoding/json"
@@ -8,10 +8,9 @@ import (
 	"github.com/bhashimoto/ratata/internal/database"
 )
 
-
 func (cfg *ApiConfig) HandleUserAccountCreate(w http.ResponseWriter, r *http.Request) {
 	params := struct {
-		UserID int64 `json:"user_id"`
+		UserID    int64 `json:"user_id"`
 		AccountID int64 `json:"account_id"`
 	}{}
 
@@ -23,9 +22,9 @@ func (cfg *ApiConfig) HandleUserAccountCreate(w http.ResponseWriter, r *http.Req
 	}
 
 	dbUserAccount, err := cfg.DB.CreateUserAccount(r.Context(), database.CreateUserAccountParams{
-		UserID: params.UserID,
-		AccountID: params.AccountID,
-		CreatedAt: time.Now().Unix(),
+		UserID:     params.UserID,
+		AccountID:  params.AccountID,
+		CreatedAt:  time.Now().Unix(),
 		ModifiedAt: time.Now().Unix(),
 	})
 	if err != nil {
@@ -39,6 +38,5 @@ func (cfg *ApiConfig) HandleUserAccountCreate(w http.ResponseWriter, r *http.Req
 		return
 	}
 	respondWithJSON(w, http.StatusCreated, userAccount)
-	
 
 }

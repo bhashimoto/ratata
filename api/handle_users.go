@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/bhashimoto/ratata/internal/database"
+	"github.com/bhashimoto/ratata/types"
 )
 
 func (cfg *ApiConfig) HandleGetUser(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +29,7 @@ func (cfg *ApiConfig) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "unable to retrieve accounts")
 		return
 	}
-	accounts := []Account{}
+	accounts := []types.Account{}
 
 	for _, dbAcc := range dbAccs {
 		account, err := cfg.DBAccountToAccount(dbAcc)
@@ -40,16 +41,15 @@ func (cfg *ApiConfig) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := struct {
-		User User `json:"user"`
-		Accounts []Account `json:"accounts"`
+		User     types.User      `json:"user"`
+		Accounts []types.Account `json:"accounts"`
 	}{
-		User: user,
+		User:     user,
 		Accounts: accounts,
 	}
 
-
 	respondWithJSON(w, http.StatusOK, resp)
-	
+
 }
 
 func (cfg *ApiConfig) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +59,7 @@ func (cfg *ApiConfig) HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users := []User{}
+	users := []types.User{}
 
 	for _, dbUser := range dbUsers {
 		users = append(users, cfg.DBUserToUser(dbUser))
@@ -81,8 +81,8 @@ func (cfg *ApiConfig) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dbUser, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
-		Name: params.Name,
-		CreatedAt: time.Now().Unix(),
+		Name:       params.Name,
+		CreatedAt:  time.Now().Unix(),
 		ModifiedAt: time.Now().Unix(),
 	})
 	if err != nil {
