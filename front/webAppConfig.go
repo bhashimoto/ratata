@@ -128,7 +128,7 @@ func (cfg *WebAppConfig) fetchAccounts() ([]types.Account, error) {
 }
 
 func (cfg *WebAppConfig) fetchAccount(id string) (types.Account, error) {
-	resp, err := cfg.sendRequest(fmt.Sprintf("accounts/%s", id), "GET", nil, nil)
+	resp, err := cfg.sendRequest(fmt.Sprintf("accounts/%s", id), "GET", nil, bytes.NewReader([]byte{}))
 	if err != nil {
 		return types.Account{}, err
 	}
