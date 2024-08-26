@@ -153,13 +153,15 @@ func (cfg *WebAppConfig) HandleAccounts(w http.ResponseWriter, r *http.Request) 
 		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	payments, balances, err := cfg.fetchAccountBalance(accId)
+	balances, payments, err := cfg.fetchAccountBalance(accId)
 	data := struct {
 		Account types.Account
 		Balances []types.Balance
 		Payments []types.Payment
 	}{
 		Account: accountData,
+		Balances: balances,
+		Payments: payments,
 	}
 	cfg.Templates.ExecuteTemplate(w, "accounts", data)
 

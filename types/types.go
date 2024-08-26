@@ -53,7 +53,7 @@ type Payment struct {
 }
 
 type Balance struct {
-	User types.User    `json:"user"`
+	User User    `json:"user"`
 	Paid float64 `json:"paid"`
 	Owes float64 `json:"owes"`
 }
