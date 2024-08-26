@@ -45,3 +45,15 @@ type UserAccount struct {
 	CreatedAt  time.Time `json:"created_at"`
 	ModifiedAt time.Time `json:"modified_at"`
 }
+
+type Payment struct {
+	From   User    `json:"from"`
+	To     User    `json:"to"`
+	Amount float64 `json:"amount"`
+}
+
+type Balance struct {
+	User types.User    `json:"user"`
+	Paid float64 `json:"paid"`
+	Owes float64 `json:"owes"`
+}

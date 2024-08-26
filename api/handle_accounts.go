@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"math"
 	"net/http"
 	"sort"
@@ -292,6 +293,7 @@ func (cfg *ApiConfig) HandleAccountGet(w http.ResponseWriter, r *http.Request) {
 func (cfg *ApiConfig) getAccounts() ([]types.Account, error) {
 	dbAccounts, err := cfg.DB.GetAccounts(context.Background())
 	if err != nil {
+		log.Println("could not get accounts from DB")
 		return []types.Account{}, err
 	}
 
@@ -299,6 +301,7 @@ func (cfg *ApiConfig) getAccounts() ([]types.Account, error) {
 	for _, dbAccount := range dbAccounts {
 		account, err := cfg.DBAccountToAccount(dbAccount)
 		if err != nil {
+			log.Println("could not convert dbAccount to Account") 
 			return []types.Account{}, err
 		}
 		accounts = append(accounts, account)

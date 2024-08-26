@@ -17,7 +17,7 @@ func (cfg *WebAppConfig) HandleTransactionFormGet(w http.ResponseWriter, r *http
 		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	cfg.ServeTemplate(w, "new_transaction", accountData)
+	cfg.Templates.ExecuteTemplate(w, "new_transaction", accountData)
 }
 
 func (cfg *WebAppConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.Request) {
@@ -136,17 +136,7 @@ func (cfg *WebAppConfig) HandleTransactionsGet(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	tmpl, err := template.ParseFiles(
-		"./static/transactions.html",
-		"./static/new_transaction.html",
-	)
-	if err != nil {
-		log.Println(err)
-		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	err = tmpl.ExecuteTemplate(w, "transactions", accountData)
+	err = cfg.Templates.ExecuteTemplate(w, "transactions", accountData)
 	if err != nil {
 		log.Println(err)
 		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
@@ -156,25 +146,24 @@ func (cfg *WebAppConfig) HandleTransactionsGet(w http.ResponseWriter, r *http.Re
 }
 
 func (cfg *WebAppConfig) HandleAccounts(w http.ResponseWriter, r *http.Request) {
-	accountData, err := cfg.fetchAccount(r.PathValue("accountID"))
+	accId := r.PathValue("accountID")
+	accountData, err := cfg.fetchAccount(accId)
 	if err != nil {
+		log.Println("error from fetchAccount in HandleAccounts")
 		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	tmpl, err := template.ParseGlob("./static/*.html")
-
-	if err != nil {
-		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
-		return
+	payments, balances, err := cfg.fetchAccountBalance(accId)
+	data := struct {
+		Account types.Account
+		Balances []types.Balance
+		Payments []types.Payment
+	}{
+		Account: accountData,
 	}
+	cfg.Templates.ExecuteTemplate(w, "accounts", data)
 
-	err = tmpl.ExecuteTemplate(w, "accounts", accountData)
-	if err != nil {
-		log.Println(err.Error())
-		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+
 
 }
 
@@ -224,7 +213,7 @@ func (cfg *WebAppConfig) HandleAccountCreate(w http.ResponseWriter, r *http.Requ
 	log.Println("adding header")
 	w.Header().Add("Hx-Trigger", "newAccount")
 	log.Println("serving accounts")
-	cfg.ServeTemplate(w, "accounts_list", accounts)
+	cfg.Templates.ExecuteTemplate(w, "accounts_list", accounts)
 }
 
 func (cfg *WebAppConfig) getAccount(id int64) {
@@ -240,6 +229,6 @@ func (cfg *WebAppConfig) HandleAccountsList(w http.ResponseWriter, r *http.Reque
 		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	cfg.ServeTemplate(w, "components/accounts_list.html", accounts)
+	cfg.Templates.ExecuteTemplate(w, "components/accounts_list.html", accounts)
 }
 
