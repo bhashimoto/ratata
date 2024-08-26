@@ -40,6 +40,6 @@ func SetFrontEndRoutes(cfg *front.WebAppConfig, mux *http.ServeMux) error {
 	mux.HandleFunc("POST /accounts/{accountID}/create", cfg.HandleTransactionCreate)
 	mux.HandleFunc("GET /accounts/{accountID}/create", cfg.HandleTransactionFormGet)
 	mux.HandleFunc("GET /accounts/{accountID}/transactions", cfg.HandleTransactionsGet)
-	//mux.HandleFunc("GET /accounts/{accountID}/payments", cfg.HandlePaymentsGet)
+	mux.HandleFunc("GET /accounts/{accountID}/payments", cfg.HandlePaymentsGet)
 	return nil
 }

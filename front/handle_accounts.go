@@ -3,7 +3,6 @@ package front
 import (
 	"bytes"
 	"encoding/json"
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -93,14 +92,9 @@ func (cfg *WebAppConfig) HandleTransactionCreate(w http.ResponseWriter, r *http.
 
 
 	// Returning a new form and sending triggers
-	tmpl, err := template.ParseFiles("./static/new_transaction.html")
-	if err != nil {
-		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
 
 	w.Header().Add("HX-Trigger", "newTransaction")
-	err = tmpl.Execute(w, accountData)
+	err = cfg.Templates.ExecuteTemplate(w, "transactionForm", accountData)
 	if err != nil {
 		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -122,6 +116,7 @@ func (cfg *WebAppConfig) createDebt(userId, transactionId int64, amount float64)
 	body := bytes.NewReader(data)
 	_ , err := cfg.sendRequest("debts", "POST", nil, body)
 	if err != nil {
+		log.Println("error adding debt")
 		return err
 	}
 	return nil
@@ -136,13 +131,45 @@ func (cfg *WebAppConfig) HandleTransactionsGet(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = cfg.Templates.ExecuteTemplate(w, "transactions", accountData)
+	data := struct {
+		Account types.Account
+	}{
+		Account: accountData,
+	}
+	err = cfg.Templates.ExecuteTemplate(w, "transactions", data)
 	if err != nil {
 		log.Println(err)
 		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+}
+
+func (cfg *WebAppConfig) HandlePaymentsGet(w http.ResponseWriter, r *http.Request) {
+	log.Println("HandlePaymentsGet called")
+	accId := r.PathValue("accountID")
+	account, err := cfg.fetchAccount(accId)
+	if err != nil {
+		log.Println("error fetching account balance at HandlePaymentsGet")
+		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+		
+	}
+	_, payments, err := cfg.fetchAccountBalance(accId)
+	if err != nil {
+		log.Println("error fetching account balance at HandlePaymentsGet")
+		cfg.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	data := struct {
+		Account types.Account
+		Payments []types.Payment
+	}{
+		Account: account,
+		Payments: payments,
+	}
+	log.Println("executing template payments")
+	cfg.Templates.ExecuteTemplate(w, "payments", data)
 }
 
 func (cfg *WebAppConfig) HandleAccounts(w http.ResponseWriter, r *http.Request) {
